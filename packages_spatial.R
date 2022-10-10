@@ -2,7 +2,9 @@
 
 packages_spatial <- c("spData", "terra", "tmap", "leafem", "spdep", "rgdal",
                       "maptools", "sp", "RColorBrewer", "classInt", "maps",
-                      "prettymapr")
+                      "prettymapr", "raster", "wesanderson", "quickPlot",
+                      "viridis", "scales", "ggplot2", "shape", "sf",
+                      "cartography", "mapview", "ggrepel", "hexbin")
 
 ###############################################################################
 
