@@ -93,23 +93,32 @@ woj <- readOGR("./data", "wojewodztwa") # 16 jedn.
 woj <- spTransform(woj, CRS("+proj=longlat +datum=NAD83"))
 plot(woj)
 
+# 6 powiatow ma taka sama nazwe
+# gmin ponad 2000
+
 pow <- readOGR("./data", "powiaty") # 380 jedn.
 pow <- spTransform(pow, CRS("+proj=longlat +datum=NAD83"))
 plot(pow)
 
+class(pow)
+
+# CRS - Sferyczne dane 
+# MERCS - Planarne dane
+
 # wczytywanie danych
-dane <- read.csv("data/data_nts4_2019_pl.csv", 
+dane <- read.csv("data/data_nts4_2019_pl.csv",
                  sep = ";", dec = ",", header = TRUE)
 
 dim(dane)
 summary(dane)
 names(dane)
 
+head(dane)
+
 # konwersja danych z sp do df
 pow.df <- as.data.frame(pow)
 
-# współrzędne środków powiatów
-crds <- coordinates(pow)
+head(pow.df)
 
 # współrzędne środków powiatów
 crds <- coordinates(pow)
@@ -123,10 +132,13 @@ points(crds, pch = 21, bg = "red", cex = 0.8)
 # podpisywanie regionów
 # zamiast NAME_2 wybrać zmienną np. stolic regionów
 plot(pow)
-pointLabel(crds, as.character(pow.df$NAME_2), cex = 0.6)
+
+pow.df <- pow.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
+
+pointLabel(crds, as.character(pow.df$jpt_nazwa_), cex = 0.6)
 
 plot(pow)
-text(crds, as.character(pow.df$NAME_2), cex = 0.6)
+text(crds, as.character(pow.df$jpt_nazwa_), cex = 0.6)
 
 # interaktywna edycja nazw regionów
 plot(pow)
@@ -181,11 +193,14 @@ cols <- c("blue3", "cornflowerblue", "seagreen1", "yellow",
           "salmon4", "aquamarine3", "darkgreen", "chartreuse3",
           "cyan4", "darkred", "darkviolet", "yellow", "blue")
 plot(pow, col = cols[findInterval(x, brks)], border = "grey50")
+plot(woj, add = TRUE, lwd = 2)
 
 # etykiety nazw województw
 crds.woj <- coordinates(woj)
 woj.df <- as.data.frame(woj)
-text(crds.woj, label = woj.df$VARNAME_1, cex = 0.8, font = 2)
+woj.df <- woj.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
+
+text(crds.woj, label = woj.df$jpt_nazwa_, cex = 0.8, font = 2)
 
 # to samo, ale z cienowaniem
 dens <- (2:length(brks)) * 3
@@ -257,6 +272,8 @@ WOJ <- st_read("data/wojewodztwa.shp")
 POW <- st_transform(POW, 4326) 	# konwersja 4326=WGS84, 4267=NAD27
 WOJ <- st_transform(WOJ, 4326) 	# konwersja do WGS84
 
+POW
+
 ### informacyjnie - sprawdzenie co to za projekcja
 st_crs(27700)$proj4string
 #[1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"
@@ -325,6 +342,8 @@ layoutLayer(title = "Spatial accessibility within NTS2 regions, Poland",
             frame = FALSE, north = FALSE, tabtitle = TRUE,
             theme = "sand.pal")
 north(pos = "topleft") # north arrow
+
+#### TUTAJ SKONCZONE ZAJECIA 02 ############################################################
 
 # sposób z ggplot()
 
