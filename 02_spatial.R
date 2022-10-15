@@ -1,5 +1,4 @@
 # Ekonometria przestrzennia w R - zajęcia 1
-
 a <- rgb(runif(21, 0, 1), runif(21, 0, 1), runif(21, 0, 1))
 a
 
