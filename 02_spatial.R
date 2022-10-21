@@ -81,7 +81,7 @@ ggplot(data.frame(x = rnorm(10000), y = rnorm(10000)), aes(x = x, y = y)) +
 
 # Maps
 getwd()
-setwd("/home/oic/IiE_MGR/EkonometriaPrzestrzennaR")
+setwd("/home/oic/IiE/EkonometriaPrzestrzennaR")
 getwd()
 
 pl <- readOGR("./data", "Panstwo") # 1 jedn.
@@ -101,7 +101,7 @@ plot(pow)
 
 class(pow)
 
-# CRS - Sferyczne dane 
+# CRS - Sferyczne dane
 # MERCS - Planarne dane
 
 # wczytywanie danych
@@ -132,8 +132,6 @@ points(crds, pch = 21, bg = "red", cex = 0.8)
 # zamiast NAME_2 wybrać zmienną np. stolic regionów
 plot(pow)
 
-pow.df <- pow.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
-
 pointLabel(crds, as.character(pow.df$jpt_nazwa_), cex = 0.6)
 
 plot(pow)
@@ -148,8 +146,12 @@ identify(crds, labels = as.character(pow.df$jpt_nazwa_))
 woj.df <- as.data.frame(woj)
 summary(woj.df)
 
+woj.df <- woj.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
+
 pow.df <- as.data.frame(pow)
 summary(pow.df)
+
+pow.df <- pow.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
 
 # mapa regionalna – województwo lubelskie
 # wersja A – zapisanie osobno bazy danych z shp
@@ -164,6 +166,7 @@ plot(woj[woj@data$jpt_nazwa_ == "lubelskie", ],
 # mapa powiatów woj.lubelskiego
 # pow.df <- as.data.frame(pow) # nie ma identyfikatora województw
 dane15 <- dane[dane$rok == 2015, ]
+
 lub.pow <- pow[dane15$wojew_nazwa == "Lubelskie", ]
 plot(lub.pow, main = "Lubelskie NTS4")
 plot(lub.woj, add = TRUE, lwd = 2)
@@ -194,12 +197,32 @@ cols <- c("blue3", "cornflowerblue", "seagreen1", "yellow",
 plot(pow, col = cols[findInterval(x, brks)], border = "grey50")
 plot(woj, add = TRUE, lwd = 2)
 
+cols[findInterval(x, brks)]
+
+x
+
+a <- c(1,1,2,2,3,3,4,4)
+findInterval(a,c(3,4))
+
+brks <- (0 : 16)
+findInterval(x, brks)
+length(findInterval(x, brks))
+
+brks <- (0 : 16) * 3
+findInterval(x, brks)
+length(findInterval(x, brks))
+
 # etykiety nazw województw
 crds.woj <- coordinates(woj)
 woj.df <- as.data.frame(woj)
 woj.df <- woj.df %>% lapply(., iconv, to = "UTF-8") %>% tibble::as_tibble()
 
 text(crds.woj, label = woj.df$jpt_nazwa_, cex = 0.8, font = 2)
+
+
+dens <- (2:length(brks)) * 3
+dens
+dens[findInterval(x, brks, all.inside = TRUE)]
 
 # to samo, ale z cienowaniem
 dens <- (2:length(brks)) * 3
@@ -215,15 +238,21 @@ library(classInt)
 zmienna <- dane$XA21[dane$rok == 2009]
 summary(zmienna)
 
+zmienna
+min(zmienna)
+max(zmienna)
+
 przedzialy <- 8
 kolory <- brewer.pal(przedzialy, "BuPu")  # wybór kolorów
 klasy <- classIntervals(zmienna, przedzialy, style = "fixed",
-fixedBreaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40))
+                        fixedBreaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40))
+
 tabela.kolorów <- findColours(klasy, kolory)
 
 plot(pow, col = tabela.kolorów)
 plot(woj, lwd = 2, add = TRUE)
-legend("bottomleft", legend = names(attr(tabela.kolorów, "table")),
+legend("bottomleft",
+       legend = names(attr(tabela.kolorów, "table")),
        fill = attr(tabela.kolorów, "palette"), cex = 1, bty = "n")
 title(main = "Stopa bezrobocia w powiatach w 2009r.")
 
@@ -342,8 +371,6 @@ layoutLayer(title = "Spatial accessibility within NTS2 regions, Poland",
             theme = "sand.pal")
 north(pos = "topleft") # north arrow
 
-#### TUTAJ SKONCZONE ZAJECIA 02 ############################################################
-
 # sposób z ggplot()
 
 # wykres danych regionalnych – zmienna dist
@@ -400,10 +427,10 @@ mapview(POW["dist"], col.regions = sf.colors(10), fgb = FALSE)
 
 # lokalizacja kilku dużych miast – obiekt klasy df
 miasta <- data.frame(city = 0, x = 0, y = 0)# pusty obiekt
-miasta[1, ] <- c("Warszawa", 20.7810088, 52.2330269)# lokalizacja Warszawa
+miasta[1, ] <- c("Warszawa", 21.0610088, 52.2330269)# lokalizacja Warszawa
 miasta[2, ] <- c("Kraków", 19.8647884, 50.0469018)# lokalizacja Kraków
 miasta[3, ] <- c("Gdańsk", 18.5499432, 54.3612063)# lokalizacja Gdańsk
-miasta[4, ] <- c("Poznań", 16.3603594, 52.3997116)# lokalizacja Poznań
+miasta[4, ] <- c("Poznań", 16.7603594, 52.3997116)# lokalizacja Poznań
 
 # sprawdzamy, czy dane są numeryczne + konwersja na numeryczne
 summary(miasta)
@@ -415,7 +442,7 @@ summary(miasta)
 
 # zmiana klas – df sp sf
 miasta.sp <- miasta # przygotowanie do zmiany klasy na sp
-coordinates(miasta.sp) <- c("x", "y") # zmiana klasy na sp
+coordinates(miasta.sp) <- c("x", "y") # zmiana klasy z df na sp (nie działa na linux)
 proj4string(miasta.sp) <- CRS("+proj=longlat +datum=NAD83")
 miasta.sf <- st_as_sf(miasta.sp) # konwersja do sf
 
@@ -452,13 +479,13 @@ ggplot() +
     scale_y_continuous(breaks = 34:36)
 
 # grafika interaktywna w przeglądarce
-mapview(POW, zcol = "dist") # map + variable
+mapview(POW["dist"], zcol = "dist") # map + variable
 
-mapview(POW.circle.waw, zcol = NULL) # just contours of selected regions
+mapview(POW.circle.waw["dist"], zcol = NULL) # just contours of selected regions
 
 # mapy interaktywne wielowarstwowe
 # powiaty + okręgi z powiatami i zmienną
-mapview(POW.circle.waw, zcol = "dist") + mapview(POW.circle.kra, zcol = "dist") + mapview(POW.circle.gda, zcol = "dist") + mapview(POW.circle.poz, zcol = "dist") + mapview(POW, zcol = NULL)
+mapview(POW[NULL]) + mapview(POW.circle.waw["dist"], zcol = "dist") + mapview(POW.circle.kra["dist"], zcol = "dist") + mapview(POW.circle.gda["dist"], zcol = "dist") + mapview(POW.circle.poz["dist"], zcol = "dist")
 
 # to samo + dodatkowo punkty
 mapview(miasta.sf) + mapview(POW.circle.waw, zcol = "dist") + mapview(POW.circle.kra, zcol = "dist") + mapview(POW.circle.gda, zcol = "dist") + mapview(POW.circle.poz, zcol = "dist") + mapview(POW, zcol = NULL)
