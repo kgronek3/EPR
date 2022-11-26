@@ -4,17 +4,23 @@ library(sp)
         
 # Mapa zjawiska
 
-# rozkład przestrzenny – mapa stopy bezrobocia
-dane09<-dane[dane$rok==2009, ]
+setwd("/home/oic/IiE/EkonometriaPrzestrzennaR")
 
-x<-dane09$XA21 # wyodrębnienie zmiennej
+dane <- read.csv("./data/data_nts4_2019_pl.csv",
+                 sep = ";", dec = ",", header = TRUE)
+
+# rozkład przestrzenny – mapa stopy bezrobocia
+dane09 <- dane[dane$rok == 2009, ]
+
+x <- dane09$XA21 # wyodrębnienie zmiennej
 
 summary(x)
 
 cols<-rev(heat.colors(7))
 
 brks<-(0:6)*5
-
+pow<-readOGR("./data", "powiaty") # 380 jedn. 
+pow<-spTransform(pow, CRS("+proj=longlat +datum=NAD83"))
 plot(pow, col=cols[findInterval(x, brks)])
 
 legend("bottomleft", legend=brks, pt.bg=cols, bty="n", pch=22)
@@ -23,13 +29,25 @@ title(main="Stopa bezrobocia w 2009r.",sub="W legendzie przedział od …")
 
 # globalna statystyka Morana
 dane09<-dane[dane$rok==2009, ]
+
 wynik01<-moran(dane09$XA21, cont.listw, 
                length(cont.nb), Szero(cont.listw))
 wynik02<-moran.test(dane09$XA21, cont.listw)
 wynik03<-moran.test(dane09$XA21, cont.listw, randomisation=FALSE)
+
 wynik01
+
 wynik02
-wynik03
+
+wynik03 # tutaj liczona 'wariancja morana' wyprowadzona w latach 90'
+
+# Moran I statistic to ile wynosi dla tak rozlozonych danych
+# Expectation to gdyby rozlosowac ulozenie regionow i policzyc statystyke morana
+# variancja to wariancja dla morajna 1
+
+# moran i statistic standard deviate = 14.559 to odchylenie w rozkladzie normalnym
+
+# mozna ustandaryzowac poprzez Z = moran I - expectation / sqrt(variance)
 
 # wartość p-value statystyki Morana (rozkład normalny)
 pval.norm<-1-pnorm(wynik03$statistic, mean=0, sd=1)  
@@ -92,7 +110,7 @@ rownames(moran)<-"Moran’s I"
 moran
 
 for(i in 2006:2017){  # pętla wykorzustuje liczby naturalne
-    result01<-moran.test(dane$XA21[dane$year==i], cont.listw)
+    result01<-moran.test(dane$XA21[dane$rok==i], cont.listw)
     moran[1,i-2005]<-result01$estimate[1]}
 moran
 
@@ -162,15 +180,8 @@ legend("bottomleft", legend=c("mało", "średnio", "dużo"), leglabs(brks1), fil
 zmienna.f<-factor(cut(zmienna, breaks=c(0,6, 18, 40), labels=c("mało", "średnio","dużo")))
 
 joincount.test(zmienna.f, cont.listw)
+
 joincount.multi(zmienna.f, cont.listw)
+
 joincount.multi(zmienna.f, cont.listw)
-
-
-
-
-
-
-
-
-
 
