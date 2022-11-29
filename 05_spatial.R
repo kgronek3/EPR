@@ -11,29 +11,29 @@ library(ggplot2)
 library(spatialreg)
 
 # ustalenie ścieżki dostępu do Working Directory
-setwd("C:/Users/Admin/Desktop/mójR")
+setwd("/home/oic/IiE/EkonometriaPrzestrzennaR")
 
-pow<-readOGR(".", "powiaty") # 380 jedn. 
+pow<-readOGR("./data", "powiaty") # 380 jedn. 
 pow<-spTransform(pow, CRS("+proj=longlat +datum=NAD83"))
 
-POW<-st_read("powiaty.shp")
+POW<-st_read("./data/powiaty.shp")
 POW<-st_transform(POW, 4326) 	# konwersja 4326=WGS84, 4267=NAD27 
 
 #wczytywanie danych
-dane<-read.csv("data_nts4_2019_pl.csv", sep=";", dec=",", header=TRUE) 
+dane<-read.csv("data/data_nts4_2019_pl.csv", sep=";", dec=",", header=TRUE) 
 dim(dane)
 summary(dane)
 names(dane)
 
 # Podstawowy model
-Dla 380 powiatów (NTS4) oszacuj model dla wynagrodzeń. Jako zmienne objaśniające wykorzystaj dostępne w zbiorze zmienne rozsądnie tłumaczące zjawisko, a także opóźnienie przestrzenne zmiennej objaśnianej etc. 
+# Dla 380 powiatów (NTS4) oszacuj model dla wynagrodzeń. Jako zmienne objaśniające wykorzystaj dostępne w zbiorze zmienne rozsądnie tłumaczące zjawisko, a także opóźnienie przestrzenne zmiennej objaśnianej etc. 
 
 # podstawowy model regresji liniowej, rozkład przestrzenny reszt
 # y	przeciętne wynagrodzenie Polska=100%		(XA14)
-# x1	udział osób zatrudnionych w usługach		(XA18+XA19+XA20/XA15)
+# x1	udział osób zatrudnionych w usługach	(XA18+XA19+XA20/XA15)
 # x2	stopa bezrobocia						(XA21)
-# x3	liczba spółek per capita Polska=100%		(XA13/mean(XA13))
-# x4	odległość powiatu od miasta wojew.			(dist)
+# x3	liczba spółek per capita Polska=100%	(XA13/mean(XA13))
+# x4	odległość powiatu od miasta wojew.		(dist)
 
 # przygotowanie danych
 sub<-dane[dane$rok==2016, ]
@@ -62,6 +62,7 @@ summary(model.lm)
 model.lm2<-lm(sub$y~sub$x1+sub$x2+sub$x3+sub$x4) # opcja B
 summary(model.lm2)
 
+# niby najlepsza opcja
 eq<-y~x1+x2+x3+x4 # opcja C
 model.lm3<-lm(eq, data=sub)
 summary(model.lm3)
@@ -74,6 +75,7 @@ attributes(model.lm)
 
 # diagnostyka modelu liniowego
 install.packages("lmtest")
+
 library(lmtest)
 bptest(model.lm) # test na heteroskedastyczność (H1) /homoskedast…(H0)
 
@@ -93,6 +95,7 @@ legend("bottomleft", legend=c("<mean-sd", "(mean-sd, mean)", "(mean, mean+sd)", 
 # kilka testów stosowanych do MNK (OLS)
 # testy Morana - ważne – uzasadniają stosowanie metod przestrzennych
 lm.morantest(model.lm, cont.listw) # czy reszty są losowe przestrzennie?
+
 moran.test(res, cont.listw)
 
 # test join.count dla reszt (dodatnie vs. ujemne)
@@ -120,6 +123,7 @@ summary(SAC_1)
 
 SDEM_1<-errorsarlm(form, data=sub, listw=cont.listw, etype="emixed") # with spatial lags of X
 summary(SDEM_1)
+
 SEM_1<-errorsarlm(form, data=sub, listw=cont.listw) # no spat-lags of X
 summary(SEM_1)
 
@@ -129,6 +133,7 @@ summary(SEM_1)
 
 SDM_1<-lagsarlm(form, data=sub, listw=cont.listw, type="mixed") # with spatial lags of X
 summary(SDM_1)
+
 SAR_1<-lagsarlm(form, data=sub, listw=cont.listw) # no spatial lags of X
 summary(SAR_1)
 
@@ -143,12 +148,19 @@ summary(SLX_1)
 # H1 – unrestricted (wider) model is better
 # df in chi2 is the number of restricted parameters
 LR.Sarlm(GNS_1, SDM_1)
+
 LR.Sarlm(GNS_1, SDEM_1)
+
 LR.Sarlm(GNS_1, SLX_1)
+
 LR.Sarlm(SDM_1, SAR_1)
+
 LR.Sarlm(SDM_1, SEM_1)
+
 LR.Sarlm(SDM_1, SLX_1)
+
 LR.Sarlm(SDEM_1, SLX_1)
+
 lrtest(model.lm, SLX_1)
 
 # Efekty pośrednie i bezpośrednie (impacts)

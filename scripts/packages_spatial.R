@@ -5,7 +5,7 @@ packages_spatial <- c("spData", "terra", "tmap", "leafem", "spdep", "rgdal",
                       "prettymapr", "raster", "wesanderson", "quickPlot",
                       "viridis", "scales", "ggplot2", "shape", "sf",
                       "cartography", "mapview", "ggrepel", "hexbin",
-                      "dplyr")
+                      "dplyr","spatialreg")
 
 ##############################################################################
 
